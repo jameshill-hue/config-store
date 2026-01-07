@@ -57,6 +57,29 @@
 
 ---
 
+## Lesson 2: Building the Express Application
+
+### Commands Used:
+
+8. **Run application locally in development mode**
+   ```bash
+   npm run dev
+   ```
+   - Starts Express server with nodemon for auto-reload
+   - Server runs on port 3000 (default)
+   - Accessible at `http://localhost:3000`
+
+9. **Build and run with Docker Compose (with watch mode)**
+   ```bash
+   docker compose up --build --watch
+   ```
+   - `--build`: Rebuilds images before starting
+   - `--watch`: Enables file watching for hot-reload in containers
+   - Maps container port 80 to host port 3000
+   - Uses development stage from multi-stage Dockerfile
+
+---
+
 ## What Has Been Set Up
 
 ### 1. **GitHub Repository**
@@ -124,12 +147,12 @@ config-store/
 6. Commit and push changes to GitHub repository
 
 ### Important Files Status:
-- ✅ `package.json` - Configured with dependencies
+- ✅ `package.json` - Configured with dependencies and dev script
 - ✅ `.dockerignore` - Configured (excludes node_modules and .env*)
 - ✅ Git repository - Already cloned and initialized (on main branch)
-- ⏳ `dockerfile` - Created but empty (needs configuration)
-- ⏳ `compose.yaml` - Created but empty (needs configuration)
-- ⏳ `src/` - Directory created but empty (needs application code)
+- ✅ `dockerfile` - Multi-stage build configured (development & production)
+- ✅ `compose.yaml` - Docker Compose configured with watch mode
+- ✅ `src/index.js` - Basic Express application created
 
 ---
 
@@ -140,4 +163,53 @@ config-store/
 - **ORM**: Sequelize
 - **Containerization**: Docker + Docker Compose
 - **Development**: nodemon for hot-reloading
+
+---
+
+## Lesson 2: Building the Express Application - Details
+
+### What Was Built:
+
+#### 1. **Express Application (`src/index.js`)**
+- Basic Express server setup with middleware
+- CORS enabled for cross-origin requests
+- Body parser for JSON request handling
+- Simple GET route at root path (`/`)
+- Port configuration via environment variable (defaults to 3000)
+
+#### 2. **Multi-Stage Dockerfile**
+- **Development Stage**: 
+  - Uses `node:22-alpine` base image
+  - Installs all dependencies (including dev)
+  - Runs `npm run dev` with nodemon for hot-reload
+- **Production Dependencies Stage**:
+  - Separate stage to install only production dependencies
+  - Optimizes final image size
+- **Production Stage**:
+  - Uses `distroless/nodejs22` for minimal attack surface
+  - No shell, minimal OS components
+  - Copies only production dependencies and source code
+
+#### 3. **Docker Compose Configuration (`compose.yaml`)**
+- **Service**: `app`
+  - Builds using development target
+  - Port mapping: `3000:80` (host:container)
+  - Environment: `PORT=80` (container port)
+  - **Watch Mode**: Syncs `./src` to `/app/src` for hot-reload
+  - Custom network: `config-store-net`
+
+#### 4. **Package.json Scripts**
+- Added `"dev": "nodemon src/index.js"` script
+- Enables running application with auto-reload during development
+
+### Key Concepts:
+
+- **Multi-stage Docker builds**: Separate stages for development and production optimize image size and security
+- **Docker Compose watch mode**: Automatically syncs file changes to container for development
+- **Distroless images**: Minimal production images with no shell or package manager for better security
+- **Environment variables**: PORT can be configured via environment for flexibility
+
+### Development Workflow:
+1. Local development: `npm run dev` (runs on port 3000)
+2. Containerized development: `docker compose up --build --watch` (runs on port 3000, mapped from container port 80)
 
