@@ -1,0 +1,32 @@
+{
+  "name": "config-store",
+  "version": "1.0.0",
+  "description": "Helm 1go - [Optional] Developing a Key-Value Store API. URL:https://itgtraining.mygo1.com/play/37844164?embeddingAppRedirectPath=%2Fmy-learning%2Fin-progress%26back_path%3Dundefined&amp;exitAction=2&amp;exitUrl=https%3A%2F%2Flearn.go1.com%2Fmy-learning%2Fin-progress%3FembeddingAppRedirectPath%3D%2Fmy-learning%2Fin-progress&amp;portal=itgtraining.mygo1.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jameshill-hue/config-store.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jameshill-hue/config-store/issues"
+  },
+  "homepage": "https://github.com/jameshill-hue/config-store#readme",
+  "dependencies": {
+    "body-parser": "1.20.3",
+    "cors": "2.8.5",
+    "express": "4.21.1",
+    "pg": "8.13.1",
+    "pg-hstore": "2.3.4",
+    "sequelize": "6.37.5"
+  },
+  "devDependencies": {
+    "nodemon": "3.1.7"
+  }
+}
