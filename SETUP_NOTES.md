@@ -213,3 +213,88 @@ config-store/
 1. Local development: `npm run dev` (runs on port 3000)
 2. Containerized development: `docker compose up --build --watch` (runs on port 3000, mapped from container port 80)
 
+---
+
+## Lesson 3: Configuring PostgreSQL for the Project
+
+### Commands Used:
+
+10. **Run application with Docker Compose** (includes PostgreSQL service)
+   ```bash
+   docker compose up --build --watch
+   ```
+   - Starts both application and PostgreSQL database services
+   - Database connection is established before server starts
+   - Watch mode enabled for hot-reload
+
+### What Was Built:
+
+#### 1. **Database Connection Module (`src/db.js`)**
+- Created Sequelize instance for PostgreSQL connection
+- Uses `DB_URL` environment variable for connection string
+- Configured with PostgreSQL dialect
+- Exported for use throughout the application
+
+#### 2. **Updated Express Application (`src/index.js`)**
+- Added database connection import
+- **Database startup sequence**:
+  1. Authenticate connection to PostgreSQL
+  2. Sync database models (creates tables if needed)
+  3. Start Express server only after successful DB connection
+- Error handling for database connection failures
+
+#### 3. **Docker Compose PostgreSQL Service (`compose.yaml`)**
+- **New `db` service**:
+  - Uses official `postgres:17.1` image
+  - Environment variables for database initialization:
+    - `POSTGRES_USER` - Database user
+    - `POSTGRES_PASSWORD` - Database password
+    - `POSTGRES_DB` - Database name
+  - Persistent volume (`postgres-data`) for data storage
+  - Connected to `config-store-net` network
+
+- **Updated `app` service**:
+  - Added `DB_URL` environment variable
+  - Connection string format: `postgresql://user:password@db:5432/database`
+  - Uses service name `db` for hostname (Docker Compose DNS)
+  - Added `depends_on: db` to ensure database starts first
+
+#### 4. **Git Ignore File (`.gitignore`)**
+- Standard Node.js `.gitignore` template
+- Excludes `node_modules/`, logs, cache files
+- Excludes `.env` files (for security)
+- Prevents committing sensitive data and build artifacts
+
+### Key Concepts:
+
+- **Sequelize ORM**: Object-Relational Mapping for PostgreSQL
+- **Database connection string**: Uses environment variables for flexibility and security
+- **Service dependencies**: `depends_on` ensures database starts before application
+- **Docker Compose networking**: Services can communicate using service names as hostnames
+- **Persistent volumes**: Database data survives container restarts
+- **Database synchronization**: `db.sync()` creates tables based on Sequelize models
+
+### Environment Variables Required:
+
+Create a `.env` file with:
+```
+DB_USER=your_username
+DB_PASSWORD=your_password
+DB_NAME=your_database_name
+```
+
+### Database Connection Flow:
+
+1. Docker Compose starts PostgreSQL service
+2. PostgreSQL initializes with provided credentials
+3. Application service starts and connects to database
+4. Sequelize authenticates connection
+5. Database models are synchronized (tables created)
+6. Express server starts listening for requests
+
+### Important Files Status:
+- ✅ `src/db.js` - Database connection module created
+- ✅ `src/index.js` - Updated with database connection logic
+- ✅ `compose.yaml` - PostgreSQL service added with volumes
+- ✅ `.gitignore` - Standard Node.js ignore patterns added
+

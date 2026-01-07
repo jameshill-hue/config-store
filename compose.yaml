@@ -7,13 +7,38 @@ services:
       - 3000:80
     environment:
       - PORT=80
+      # Database connection URL using environment variables and service name 'db'
+      # Format: postgresql://user:password@host:port/database
+      - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
     develop:
       watch:
         - action: sync
           path: ./src
           target: /app/src
+    # Ensure database starts before application
+    depends_on:
+      - db  
     networks:
       - config-store-net
+  # PostgreSQL database service
+  db:
+    image: postgres:17.1  # Official PostgreSQL image version 17.1
+    environment:
+      # PostgreSQL initialization environment variables
+      - POSTGRES_USER=${DB_USER}        # Database user (from .env file)
+      - POSTGRES_PASSWORD=${DB_PASSWORD} # Database password (from .env file)
+      - POSTGRES_DB=${DB_NAME}          # Database name (from .env file)
+    volumes:
+      # Persistent volume for database data (survives container restarts)
+      - type: volume
+        source: postgres-data
+        target: /var/lib/postgresql/data
+    networks:
+      config-store-net:
 
 networks:
   config-store-net:
+
+volumes:
+  # Named volume for PostgreSQL data persistence
+  postgres-data:
