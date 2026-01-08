@@ -298,3 +298,135 @@ DB_NAME=your_database_name
 - ✅ `compose.yaml` - PostgreSQL service added with volumes
 - ✅ `.gitignore` - Standard Node.js ignore patterns added
 
+---
+
+## Lesson 4: Developing the API Routes for the Key-Value Store
+
+### Commands Used:
+
+11. **Run application with Docker Compose** (for testing)
+   ```bash
+   docker compose up --build --watch
+   ```
+   - Starts application and database services
+   - Watch mode enables hot-reload during development
+
+### What Was Built:
+
+#### 1. **Database Model (`src/models.js`)**
+- **KV Model Definition**:
+  - Created Sequelize model for key-value storage
+  - **Key field**: 
+    - Type: STRING
+    - Required (allowNull: false)
+    - Unique constraint (prevents duplicate keys)
+  - **Value field**:
+    - Type: STRING
+    - Required (allowNull: false)
+- Model is synchronized with database on startup (creates `KVs` table)
+
+#### 2. **API Routes (`src/routes.js`)**
+- Created Express Router with 5 RESTful endpoints:
+  
+  **GET `/api/kv`** - List all key-value pairs
+  - Returns: Array of all key-value entries
+  - Status: 200 (success) or 500 (error)
+  
+  **GET `/api/kv/:key`** - Get specific key-value pair
+  - Params: `key` (URL parameter)
+  - Returns: Single key-value object
+  - Status: 200 (found), 404 (not found), or 500 (error)
+  
+  **POST `/api/kv`** - Create new key-value pair
+  - Body: `{ key: string, value: string }`
+  - Validation: Both key and value required
+  - Prevents duplicates (returns 400 if key exists)
+  - Returns: Created key-value object
+  - Status: 201 (created), 400 (bad request), or 500 (error)
+  
+  **PUT `/api/kv/:key`** - Update existing key-value pair
+  - Params: `key` (URL parameter)
+  - Body: `{ value: string }`
+  - Validation: Value required
+  - Returns: Updated key-value object
+  - Status: 200 (updated), 404 (not found), 400 (bad request), or 500 (error)
+  
+  **DELETE `/api/kv/:key`** - Delete key-value pair
+  - Params: `key` (URL parameter)
+  - Returns: No content
+  - Status: 204 (deleted), 404 (not found), or 500 (error)
+
+#### 3. **Updated Main Application (`src/index.js`)**
+- Imported API routes module
+- Mounted routes at `/api` prefix
+- All API endpoints accessible under `/api/kv/*`
+
+### Key Concepts:
+
+- **Sequelize Models**: Define database schema and provide ORM methods
+- **Express Router**: Modular route organization for better code structure
+- **RESTful API Design**: Standard HTTP methods (GET, POST, PUT, DELETE)
+- **Async/Await**: Handle asynchronous database operations
+- **Error Handling**: Try-catch blocks with appropriate HTTP status codes
+- **Input Validation**: Validate required fields before processing
+- **HTTP Status Codes**:
+  - 200: Success
+  - 201: Created
+  - 204: No Content (successful deletion)
+  - 400: Bad Request (validation errors)
+  - 404: Not Found
+  - 500: Internal Server Error
+
+### API Endpoints Summary:
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| GET | `/api/kv` | List all pairs | - | `{ data: [...] }` |
+| GET | `/api/kv/:key` | Get one pair | - | `{ data: {...} }` |
+| POST | `/api/kv` | Create pair | `{ key, value }` | `{ data: {...} }` |
+| PUT | `/api/kv/:key` | Update pair | `{ value }` | `{ data: {...} }` |
+| DELETE | `/api/kv/:key` | Delete pair | - | 204 No Content |
+
+### Testing with Postman:
+
+#### Test Cases:
+
+1. **Create Key-Value Pair**:
+   - Method: POST
+   - URL: `http://localhost:3000/api/kv`
+   - Body (JSON): `{ "key": "test-key", "value": "test-value" }`
+   - Expected: 201 Created with data
+
+2. **Get All Key-Value Pairs**:
+   - Method: GET
+   - URL: `http://localhost:3000/api/kv`
+   - Expected: 200 OK with array of all pairs
+
+3. **Get Specific Key-Value Pair**:
+   - Method: GET
+   - URL: `http://localhost:3000/api/kv/test-key`
+   - Expected: 200 OK with specific pair
+
+4. **Update Key-Value Pair**:
+   - Method: PUT
+   - URL: `http://localhost:3000/api/kv/test-key`
+   - Body (JSON): `{ "value": "updated-value" }`
+   - Expected: 200 OK with updated pair
+
+5. **Delete Key-Value Pair**:
+   - Method: DELETE
+   - URL: `http://localhost:3000/api/kv/test-key`
+   - Expected: 204 No Content
+
+6. **Error Cases**:
+   - POST without key/value: 400 Bad Request
+   - POST duplicate key: 400 Bad Request
+   - GET non-existent key: 404 Not Found
+   - PUT non-existent key: 404 Not Found
+   - DELETE non-existent key: 404 Not Found
+
+### Important Files Status:
+- ✅ `src/models.js` - KV model defined with Sequelize
+- ✅ `src/routes.js` - Complete RESTful API routes implemented
+- ✅ `src/index.js` - Routes mounted at `/api` prefix
+

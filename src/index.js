@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');           // Enable Cross-Origin Resource Sharing
 const bodyParser = require('body-parser'); // Parse JSON request bodies
 const db = require('./db'); // Import the database connection
-
+const apiRouter = require('./routes'); //Import the API routes
 // Set port from environment variable or default to 3000
 const port = process.env.PORT || 3000;
 const app = express();
@@ -11,7 +11,7 @@ const app = express();
 // Middleware: Enable CORS for all routes and parse JSON bodies
 app.use(cors());
 app.use(bodyParser.json());
-
+app.use('/api', apiRouter); // Mount the API routes at /api prefix
 // Basic route: GET endpoint at root path
 app.get('/', (req, res) => {
   res.send('Hello world!!!');
